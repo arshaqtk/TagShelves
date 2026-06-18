@@ -31,6 +31,10 @@ const userSchema = new Schema(
       enum: ["owner", "member"],
       default: "member",
     },
+    profilePic: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
