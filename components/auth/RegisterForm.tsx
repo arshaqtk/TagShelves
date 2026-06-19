@@ -170,7 +170,7 @@ export default function RegisterForm() {
 
       <AuthFooter
         promptText="Already Have An Account?"
-        linkText="Sign In ->"
+        linkText="Sign In"
         linkHref="/login"
       />
     </>

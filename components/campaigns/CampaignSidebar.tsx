@@ -185,6 +185,31 @@ export default function CampaignSidebar({
           </div>
         </div>
       </div>
+
+      {/* Logout button pushed to the bottom */}
+      <div className="mt-auto pb-6 px-2">
+        <button
+          onClick={() => {
+            window.location.href = "/api/auth/logout";
+          }}
+          className="w-full relative flex items-center gap-3 py-2.5 px-3.5 text-[11px] font-semibold transition-all duration-150 border-l-[3px] border-transparent text-zinc-500 hover:text-red-400 hover:bg-red-950/10 active:scale-95 cursor-pointer"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-4 h-4 transition-colors"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span className="truncate leading-none">Sign Out</span>
+        </button>
+      </div>
     </aside>
   );
 }

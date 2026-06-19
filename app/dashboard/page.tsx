@@ -7,6 +7,7 @@ import Organization from "@/models/Organization";
 import Product from "@/models/Product";
 import User from "@/models/User";
 import type { CampaignProduct } from "@/components/campaigns/types";
+import { getDashboardMetrics } from "@/lib/dbUtils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -73,9 +74,10 @@ async function getDashboardData() {
 
   await connectDB();
 
-  const [organization, products, users] = await Promise.all([
+  const [organization, products, metrics, users] = await Promise.all([
     Organization.findById(payload.organizationId).select("name plan").lean(),
-    Product.find({ organizationId: payload.organizationId }).sort({ createdAt: -1 }).lean(),
+    Product.find({ organizationId: payload.organizationId }).sort({ createdAt: -1 }).limit(3).lean(),
+    getDashboardMetrics(payload.organizationId),
     User.find({ organizationId: payload.organizationId }).select("name email role").lean(),
   ]);
 
@@ -88,6 +90,7 @@ async function getDashboardData() {
     organizationPlan: org?.plan ?? "free",
     userEmail: payload.email,
     products: productDocs.map(serializeProduct),
+    metrics,
     users: userDocs.map(serializeUser),
   };
 }

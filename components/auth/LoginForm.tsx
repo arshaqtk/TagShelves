@@ -116,7 +116,7 @@ export default function LoginForm() {
 
       <AuthFooter
         promptText="Don't Have An Account?"
-        linkText="Create Account ->"
+        linkText="Create Account"
         linkHref="/register"
       />
     </>

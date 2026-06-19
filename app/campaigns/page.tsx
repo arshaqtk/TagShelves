@@ -7,6 +7,7 @@ import Organization from "@/models/Organization";
 import Product from "@/models/Product";
 import User from "@/models/User";
 import type { CampaignProduct } from "@/components/campaigns/types";
+import { getDbStats } from "@/lib/dbUtils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -73,9 +74,12 @@ async function getCampaignData() {
 
   await connectDB();
 
-  const [organization, products, users] = await Promise.all([
+  const limit = 10;
+  const [organization, products, totalProducts, stats, users] = await Promise.all([
     Organization.findById(payload.organizationId).select("name plan").lean(),
-    Product.find({ organizationId: payload.organizationId }).sort({ createdAt: -1 }).lean(),
+    Product.find({ organizationId: payload.organizationId }).sort({ createdAt: -1 }).limit(limit).lean(),
+    Product.countDocuments({ organizationId: payload.organizationId }),
+    getDbStats(payload.organizationId),
     User.find({ organizationId: payload.organizationId }).select("name email role").lean(),
   ]);
 
@@ -87,7 +91,10 @@ async function getCampaignData() {
     organizationName: org?.name ?? "Target Australia",
     organizationPlan: org?.plan ?? "free",
     userEmail: payload.email,
-    products: productDocs.map(serializeProduct),
+    initialProducts: productDocs.map(serializeProduct),
+    initialTotalProducts: totalProducts,
+    initialLimit: limit,
+    initialStats: stats,
     users: userDocs.map(serializeUser),
   };
 }

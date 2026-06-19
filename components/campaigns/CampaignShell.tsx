@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import CampaignHeader from "./CampaignHeader";
 import CampaignSidebar from "./CampaignSidebar";
 import CampaignTable from "./CampaignTable";
 import AddProductModal from "./AddProductModal";
-import { getCampaignStats } from "./campaignUtils";
-import type { CampaignProduct } from "./types";
+import type { CampaignProduct, CampaignStats } from "./types";
 
 interface TeamUser {
   id: string;
@@ -19,7 +18,10 @@ interface CampaignShellProps {
   organizationName: string;
   organizationPlan: string;
   userEmail: string;
-  products: CampaignProduct[];
+  initialProducts: CampaignProduct[];
+  initialTotalProducts: number;
+  initialLimit: number;
+  initialStats: CampaignStats;
   users: TeamUser[];
 }
 
@@ -36,15 +38,101 @@ export default function CampaignShell({
   organizationName,
   organizationPlan,
   userEmail,
-  products: initialProducts,
+  initialProducts,
+  initialTotalProducts,
+  initialLimit,
+  initialStats,
   users,
 }: CampaignShellProps) {
   // ── Products state ──────────────────────────────────────────────
   const [products, setProducts] = useState<CampaignProduct[]>(initialProducts);
+  const [totalProducts, setTotalProducts] = useState(initialTotalProducts);
+  const [limit, setLimit] = useState(initialLimit);
+  const [page, setPage] = useState(1);
+  const [stats, setStats] = useState<CampaignStats>(initialStats);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [sortBy, setSortBy] = useState<"name" | "price-asc" | "price-desc" | "lift">("name");
+  const [loading, setLoading] = useState(false);
+
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<CampaignProduct | null>(null);
 
-  const stats = getCampaignStats(products);
+  const isFirstRender = useRef(true);
+
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const fetchProducts = async (
+    targetPage: number,
+    targetSearch: string,
+    targetStatus: string,
+    targetSort: string
+  ) => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        page: targetPage.toString(),
+        limit: limit.toString(),
+        search: targetSearch,
+        status: targetStatus,
+        sortBy: targetSort,
+      });
+      const res = await fetch(`/api/products?${queryParams}`);
+      const data = await res.json();
+      if (data.success) {
+        setProducts(
+          data.products.map((p: any) => ({
+            id: p._id || p.id,
+            name: p.name,
+            code: p.code,
+            promoPrice: p.promoPrice,
+            crossPrice: p.crossPrice,
+            validUntil: p.validUntil ? new Date(p.validUntil).toISOString() : null,
+            offer: p.offer || null,
+            status: p.status === "inactive" ? "inactive" : "active",
+          }))
+        );
+        setTotalProducts(data.pagination.totalProducts);
+        setStats(data.stats);
+        setPage(data.pagination.page);
+      }
+    } catch (err) {
+      console.error("Failed to fetch products:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Trigger fetch when parameters or page changes
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    fetchProducts(page, debouncedSearch, statusFilter, sortBy);
+  }, [page, debouncedSearch, statusFilter, sortBy]);
+
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(1);
+  };
+
+  const handleStatusFilterChange = (val: "all" | "active" | "inactive") => {
+    setStatusFilter(val);
+    setPage(1);
+  };
+
+  const handleSortByChange = (val: "name" | "price-asc" | "price-desc" | "lift") => {
+    setSortBy(val);
+    setPage(1);
+  };
 
   const handleOpenAdd = () => {
     setEditingProduct(null);
@@ -57,19 +145,22 @@ export default function CampaignShell({
   };
 
   const handleProductSaved = (saved: CampaignProduct, isEdit: boolean) => {
-    if (isEdit) {
-      setProducts((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
-    } else {
-      setProducts((prev) => [saved, ...prev]);
-    }
+    fetchProducts(page, debouncedSearch, statusFilter, sortBy);
   };
 
   const handleBulkSaved = (saved: CampaignProduct[]) => {
-    setProducts((prev) => [...saved, ...prev]);
+    setPage(1);
+    fetchProducts(1, debouncedSearch, statusFilter, sortBy);
   };
 
   const handleProductDeleted = (productId: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== productId));
+    const isLastItemOnPage = products.length === 1 && page > 1;
+    const targetPage = isLastItemOnPage ? page - 1 : page;
+    if (isLastItemOnPage) {
+      setPage(targetPage);
+    } else {
+      fetchProducts(targetPage, debouncedSearch, statusFilter, sortBy);
+    }
   };
 
   // ── Team modal state ─────────────────────────────────────────────
@@ -153,15 +244,14 @@ export default function CampaignShell({
                     {teamUsers.slice(0, 4).map((u, i) => (
                       <span
                         key={u.id}
-                        className={`h-7 w-7 rounded-full border border-[#0b0e13] flex items-center justify-center text-[9px] font-bold text-white uppercase shadow-md ${
-                          i % 4 === 0
+                        className={`h-7 w-7 rounded-full border border-[#0b0e13] flex items-center justify-center text-[9px] font-bold text-white uppercase shadow-md ${i % 4 === 0
                             ? "bg-zinc-600"
                             : i % 4 === 1
-                            ? "bg-red-600"
-                            : i % 4 === 2
-                            ? "bg-emerald-600"
-                            : "bg-sky-600"
-                        }`}
+                              ? "bg-red-600"
+                              : i % 4 === 2
+                                ? "bg-emerald-600"
+                                : "bg-sky-600"
+                          }`}
                       >
                         {getInitials(u.name)}
                       </span>
@@ -183,9 +273,21 @@ export default function CampaignShell({
             <CampaignTable
               products={products}
               stats={stats}
+              page={page}
+              limit={limit}
+              totalProducts={totalProducts}
+              totalPages={Math.ceil(totalProducts / limit)}
+              onPageChange={setPage}
+              search={search}
+              onSearchChange={handleSearchChange}
+              statusFilter={statusFilter}
+              onStatusFilterChange={handleStatusFilterChange}
+              sortBy={sortBy}
+              onSortByChange={handleSortByChange}
               onAddNew={handleOpenAdd}
               onEdit={handleOpenEdit}
               onDelete={handleProductDeleted}
+              loading={loading}
             />
           </div>
         </section>
@@ -234,11 +336,10 @@ export default function CampaignShell({
                       <p className="text-zinc-500 text-[10px] truncate leading-none mt-0.5">{u.email}</p>
                     </div>
                     <span
-                      className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border shrink-0 ${
-                        u.role === "owner"
+                      className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border shrink-0 ${u.role === "owner"
                           ? "border-red-900/40 bg-red-950/20 text-red-400"
                           : "border-emerald-900/40 bg-emerald-950/20 text-emerald-400"
-                      }`}
+                        }`}
                     >
                       {u.role}
                     </span>

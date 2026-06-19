@@ -78,7 +78,7 @@ export default function DashboardShell({
   const [isDragOver, setIsDragOver] = useState(false);
   const [importedFile, setImportedFile] = useState<string | null>(null);
   const [isPrintDone, setIsPrintDone] = useState(false);
-  
+
   // Accordion state: open Step 1 if no products, otherwise open Step 2
   const [activeAccordion, setActiveAccordion] = useState<1 | 2 | 3>(
     initialProducts.length === 0 ? 1 : 2
@@ -291,10 +291,10 @@ export default function DashboardShell({
 
             {/* Split Grid for Dashboard Items (Onboarding) and Analytics Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              
+
               {/* LEFT COLUMN: Analytics Charts (7/12 cols) */}
               <div className="lg:col-span-7 space-y-8">
-                
+
                 {/* Visual SVG Chart: Print Volumes */}
                 <div className="rounded-xl border border-zinc-800/60 bg-[#0d1017]/80 p-6 space-y-6">
                   <div className="flex justify-between items-center">
@@ -321,7 +321,7 @@ export default function DashboardShell({
                           <stop offset="100%" stopColor="#EF4444" stopOpacity="0.0" />
                         </linearGradient>
                       </defs>
-                      
+
                       {/* Grid lines */}
                       <line x1="0" y1="180" x2="500" y2="180" stroke="#1f2937" strokeWidth="1" strokeDasharray="3,3" />
                       <line x1="0" y1="130" x2="500" y2="130" stroke="#1f2937" strokeWidth="1" strokeDasharray="3,3" />
@@ -368,7 +368,7 @@ export default function DashboardShell({
 
                 {/* Grid of secondary visual components */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
+
                   {/* Visual SVG Chart: Discount Distribution */}
                   <div className="rounded-xl border border-zinc-800/60 bg-[#0d1017]/80 p-5 space-y-4">
                     <div>
@@ -456,7 +456,7 @@ export default function DashboardShell({
 
               {/* RIGHT COLUMN: Onboarding Setup Guide Widget (5/12 cols) */}
               <div className="lg:col-span-5 space-y-6">
-                
+
                 {/* Onboarding Guide Card */}
                 <div className="rounded-xl border border-zinc-800 bg-[#0c0e12] p-6 shadow-xl space-y-5">
                   <div className="border-b border-zinc-800 pb-4">
@@ -480,7 +480,7 @@ export default function DashboardShell({
 
                   {/* Onboarding Accordion List */}
                   <div className="space-y-4">
-                    
+
                     {/* STEP 1: IMPORT LIST */}
                     <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-[#11141c]/40">
                       <button
@@ -490,11 +490,10 @@ export default function DashboardShell({
                       >
                         <div className="flex items-center gap-3">
                           <span
-                            className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center border transition-all ${
-                              products.length > 0
+                            className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center border transition-all ${products.length > 0
                                 ? "bg-emerald-500 border-emerald-500 text-black"
                                 : "bg-transparent border-zinc-700 text-zinc-400"
-                            }`}
+                              }`}
                           >
                             {products.length > 0 ? "✓" : "1"}
                           </span>
@@ -534,11 +533,10 @@ export default function DashboardShell({
                       >
                         <div className="flex items-center gap-3">
                           <span
-                            className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center border transition-all ${
-                              selectedTemplate
+                            className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center border transition-all ${selectedTemplate
                                 ? "bg-emerald-500 border-emerald-500 text-black"
                                 : "bg-transparent border-zinc-700 text-zinc-400"
-                            }`}
+                              }`}
                           >
                             {selectedTemplate ? "✓" : "2"}
                           </span>
@@ -576,11 +574,10 @@ export default function DashboardShell({
                       >
                         <div className="flex items-center gap-3">
                           <span
-                            className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center border transition-all ${
-                              isPrintDone
+                            className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center border transition-all ${isPrintDone
                                 ? "bg-emerald-500 border-emerald-500 text-black"
                                 : "bg-transparent border-zinc-700 text-zinc-400"
-                            }`}
+                              }`}
                           >
                             {isPrintDone ? "✓" : "3"}
                           </span>
