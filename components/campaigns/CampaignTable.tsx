@@ -230,96 +230,120 @@ export default function CampaignTable({
                   )}
                 </td>
               </tr>
-            ) : (
-              filtered.map((product, pageIndex) => {
-                const index = startIndex + pageIndex;
-                const lift = calculateLift(product);
-                const isActive = product.status === "active";
-                const isDeleting = deletingId === product.id;
+                        ) : (
+              <>
+                {filtered.map((product, pageIndex) => {
+                  const index = startIndex + pageIndex;
+                  const lift = calculateLift(product);
+                  const isActive = product.status === "active";
+                  const isDeleting = deletingId === product.id;
 
-                return (
+                  return (
+                    <tr
+                      key={product.id}
+                      className={`border-t border-zinc-800/80 transition-colors ${isDeleting ? "opacity-40" : "hover:bg-zinc-900/40"
+                        }`}
+                    >
+                      <td className="px-3 py-2.5">
+                        <input type="checkbox" className="h-3 w-3 accent-emerald-500" aria-label={`Select ${product.name}`} />
+                      </td>
+                      <td className="px-2 py-2.5 text-zinc-200 max-w-[200px]">
+                        <div className="flex items-center gap-2">
+                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-emerald-400" : "bg-red-400"}`} />
+                          <span className="truncate">{product.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2.5 text-zinc-500 font-mono text-[10px]">{product.code}</td>
+                      <td className="px-2 py-2.5">
+                        <span className="font-semibold text-emerald-400">{formatPrice(product.promoPrice)}</span>
+                        {lift > 0 && (
+                          <span className="ml-1.5 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300">
+                            −{lift}%
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2.5 text-zinc-500">
+                        {product.crossPrice ? (
+                          <span className="line-through">{formatPrice(product.crossPrice)}</span>
+                        ) : (
+                          <span className="text-zinc-700">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2.5 text-zinc-300">{formatDate(product.validUntil)}</td>
+                      <td className="px-2 py-2.5">
+                        {product.offer ? (
+                          <span className={`rounded border px-2 py-1 text-[10px] font-semibold ${offerStyles[index % offerStyles.length]}`}>
+                            {product.offer}
+                          </span>
+                        ) : (
+                          <span className="text-zinc-700 text-[10px]">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2.5">
+                        <div className="flex gap-1.5">
+                          {/* Edit */}
+                          <button
+                            type="button"
+                            title="Edit product"
+                            onClick={() => onEdit(product)}
+                            disabled={isDeleting}
+                            className="flex h-6 w-6 items-center justify-center rounded border border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:bg-zinc-800 hover:text-zinc-200 transition-all cursor-pointer disabled:opacity-40"
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+
+                          {/* Delete */}
+                          <button
+                            type="button"
+                            title="Delete product"
+                            onClick={() => setProductToDelete(product)}
+                            disabled={isDeleting}
+                            className="flex h-6 w-6 items-center justify-center rounded border border-zinc-800 text-zinc-500 hover:border-red-800 hover:bg-red-950/30 hover:text-red-400 transition-all cursor-pointer disabled:opacity-40"
+                          >
+                            {isDeleting ? (
+                              <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                            ) : (
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                <path d="M10 11v6M14 11v6" />
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {/* Pad table with empty rows to prevent stretching/shrinking */}
+                {Array.from({ length: Math.max(0, limit - filtered.length) }).map((_, i) => (
                   <tr
-                    key={product.id}
-                    className={`border-t border-zinc-800/80 transition-colors ${isDeleting ? "opacity-40" : "hover:bg-zinc-900/40"
-                      }`}
+                    key={`empty-${i}`}
+                    className="border-t border-zinc-800/40 select-none pointer-events-none opacity-[0.12]"
                   >
                     <td className="px-3 py-2.5">
-                      <input type="checkbox" className="h-3 w-3 accent-emerald-500" aria-label={`Select ${product.name}`} />
+                      <input type="checkbox" className="h-3 w-3 opacity-0" disabled />
                     </td>
-                    <td className="px-2 py-2.5 text-zinc-200 max-w-[200px]">
-                      <div className="flex items-center gap-2">
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-emerald-400" : "bg-red-400"}`} />
-                        <span className="truncate">{product.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-2 py-2.5 text-zinc-500 font-mono text-[10px]">{product.code}</td>
+                    <td className="px-2 py-2.5 text-zinc-600">—</td>
+                    <td className="px-2 py-2.5 text-zinc-600 font-mono">—</td>
+                    <td className="px-2 py-2.5 text-zinc-600">—</td>
+                    <td className="px-2 py-2.5 text-zinc-600">—</td>
+                    <td className="px-2 py-2.5 text-zinc-600">—</td>
+                    <td className="px-2 py-2.5 text-zinc-600">—</td>
                     <td className="px-2 py-2.5">
-                      <span className="font-semibold text-emerald-400">{formatPrice(product.promoPrice)}</span>
-                      {lift > 0 && (
-                        <span className="ml-1.5 rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300">
-                          −{lift}%
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-2 py-2.5 text-zinc-500">
-                      {product.crossPrice ? (
-                        <span className="line-through">{formatPrice(product.crossPrice)}</span>
-                      ) : (
-                        <span className="text-zinc-700">—</span>
-                      )}
-                    </td>
-                    <td className="px-2 py-2.5 text-zinc-300">{formatDate(product.validUntil)}</td>
-                    <td className="px-2 py-2.5">
-                      {product.offer ? (
-                        <span className={`rounded border px-2 py-1 text-[10px] font-semibold ${offerStyles[index % offerStyles.length]}`}>
-                          {product.offer}
-                        </span>
-                      ) : (
-                        <span className="text-zinc-700 text-[10px]">—</span>
-                      )}
-                    </td>
-                    <td className="px-2 py-2.5">
-                      <div className="flex gap-1.5">
-                        {/* Edit */}
-                        <button
-                          type="button"
-                          title="Edit product"
-                          onClick={() => onEdit(product)}
-                          disabled={isDeleting}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:bg-zinc-800 hover:text-zinc-200 transition-all cursor-pointer disabled:opacity-40"
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-
-                        {/* Delete */}
-                        <button
-                          type="button"
-                          title="Delete product"
-                          onClick={() => setProductToDelete(product)}
-                          disabled={isDeleting}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-zinc-800 text-zinc-500 hover:border-red-800 hover:bg-red-950/30 hover:text-red-400 transition-all cursor-pointer disabled:opacity-40"
-                        >
-                          {isDeleting ? (
-                            <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                          ) : (
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                              <path d="M10 11v6M14 11v6" />
-                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                            </svg>
-                          )}
-                        </button>
+                      <div className="flex gap-1.5 opacity-0">
+                        <div className="h-6 w-6" />
                       </div>
                     </td>
                   </tr>
-                );
-              })
+                ))}
+              </>
             )}
           </tbody>
         </table>

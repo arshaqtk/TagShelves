@@ -60,7 +60,7 @@ export async function proxy(req: NextRequest) {
     }
 
     // PUBLIC AUTH ROUTES (redirect to dashboard if already logged in)
-    const authRoutes = ["/login", "/register", "/"];
+    const authRoutes = ["/login", "/register", "/forgot-password", "/"];
     const isAuthRoute = authRoutes.includes(path);
 
     if (isAuthRoute && decoded) {
@@ -87,6 +87,7 @@ export const config = {
     "/",
     "/login",
     "/register",
+    "/forgot-password",
     "/dashboard/:path*",
     "/campaigns/:path*",
     "/api/auth/:path*",

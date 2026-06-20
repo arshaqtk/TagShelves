@@ -460,21 +460,21 @@ export default function DashboardShell({
                 {/* Onboarding Guide Card */}
                 <div className="rounded-xl border border-zinc-800 bg-[#0c0e12] p-6 shadow-xl space-y-5">
                   <div className="border-b border-zinc-800 pb-4">
-                    <div className="flex justify-between items-center">
+                    {/* <div className="flex justify-between items-center">
                       <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">
                         Quick Start Setup Guide
                       </h3>
                       <span className="text-[10px] bg-emerald-950/40 border border-emerald-900/40 text-emerald-400 font-bold px-2 py-0.5 rounded">
                         {completedCount} / 3 Steps
                       </span>
-                    </div>
+                    </div> */}
 
                     {/* Progress Bar */}
                     <div className="mt-4 w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                      <div
+                      {/* <div
                         className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-500 ease-out"
                         style={{ width: `${(completedCount / 3) * 100}%` }}
-                      />
+                      /> */}
                     </div>
                   </div>
 
@@ -482,7 +482,7 @@ export default function DashboardShell({
                   <div className="space-y-4">
 
                     {/* STEP 1: IMPORT LIST */}
-                    <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-[#11141c]/40">
+                    {/* <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-[#11141c]/40">
                       <button
                         type="button"
                         onClick={() => setActiveAccordion(activeAccordion === 1 ? 2 : 1)}
@@ -522,10 +522,10 @@ export default function DashboardShell({
                           />
                         </div>
                       )}
-                    </div>
+                    </div> */}
 
                     {/* STEP 2: SELECT TEMPLATE */}
-                    <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-[#11141c]/40">
+                    {/* <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-[#11141c]/40">
                       <button
                         type="button"
                         onClick={() => setActiveAccordion(activeAccordion === 2 ? 3 : 2)}
@@ -563,10 +563,10 @@ export default function DashboardShell({
                           />
                         </div>
                       )}
-                    </div>
+                    </div> */}
 
                     {/* STEP 3: CONFIGURE & DOWNLOAD PRINT SHEET */}
-                    <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-[#11141c]/40">
+                    {/* <div className="border border-zinc-800/80 rounded-xl overflow-hidden bg-[#11141c]/40">
                       <button
                         type="button"
                         onClick={() => setActiveAccordion(activeAccordion === 3 ? 1 : 3)}
@@ -607,7 +607,7 @@ export default function DashboardShell({
                           />
                         </div>
                       )}
-                    </div>
+                    </div> */}
 
                   </div>
                 </div>
