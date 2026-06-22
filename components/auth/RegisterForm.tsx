@@ -9,15 +9,17 @@ interface FormState {
   name: string;
   email: string;
   password: string;
+  confirmPassword?: string;
   orgName: string;
 }
 
 export default function RegisterForm() {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>({
+  const [form, setForm] = useState<Required<FormState>>({
     name: "",
     email: "",
     password: "",
+    confirmPassword: "",
     orgName: "",
   });
   const [accountType, setAccountType] = useState<"Business" | "Individual">("Individual");
@@ -37,11 +39,51 @@ export default function RegisterForm() {
     setLoading(true);
     setError("");
 
+    // Password validation rules
+    const uppercaseRegExp   = /(?=.*[A-Z])/;
+    const lowercaseRegExp   = /(?=.*[a-z])/;
+    const digitsRegExp      = /(?=.*?[0-9])/;
+    const specialCharRegExp = /(?=.*?[#?!@$%^&*-])/;
+    const minLengthRegExp   = /.{8,}/;
+
+    if (!minLengthRegExp.test(form.password)) {
+      setError("Password must be at least 8 characters long.");
+      setLoading(false);
+      return;
+    }
+    if (!uppercaseRegExp.test(form.password)) {
+      setError("Password must contain at least one uppercase letter.");
+      setLoading(false);
+      return;
+    }
+    if (!lowercaseRegExp.test(form.password)) {
+      setError("Password must contain at least one lowercase letter.");
+      setLoading(false);
+      return;
+    }
+    if (!digitsRegExp.test(form.password)) {
+      setError("Password must contain at least one number.");
+      setLoading(false);
+      return;
+    }
+    if (!specialCharRegExp.test(form.password)) {
+      setError("Password must contain at least one special character (e.g. !, @, #, $, etc.).");
+      setLoading(false);
+      return;
+    }
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
     try {
+      const { confirmPassword, ...registerData } = form;
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, accountType }),
+        body: JSON.stringify({ ...registerData, accountType }),
       });
 
       const data = await res.json();
@@ -76,7 +118,7 @@ export default function RegisterForm() {
       if (!res.ok) {
         setError(data.message || "Verification failed. Please try again.");
       } else {
-        router.push("/dashboard");
+        router.push("/onboarding");
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -281,7 +323,16 @@ export default function RegisterForm() {
           value={form.password}
           onChange={handleChange}
           required
-          minLength={8}
+          className="w-full px-4 py-3 rounded-lg border border-zinc-800 bg-[#0c0e12] text-zinc-100 text-sm placeholder-zinc-500 outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700/50 transition"
+        />
+        <input
+          id="register-confirm-password"
+          name="confirmPassword"
+          type="password"
+          placeholder="Confirm Password"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          required
           className="w-full px-4 py-3 rounded-lg border border-zinc-800 bg-[#0c0e12] text-zinc-100 text-sm placeholder-zinc-500 outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700/50 transition"
         />
 
