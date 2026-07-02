@@ -26,10 +26,11 @@ export async function proxy(req: NextRequest) {
       }
     }
 
-    // Proxy auth endpoints to Express server (port 5000)
+    // Proxy auth endpoints to Express server
     // /api/products is handled natively by Next.js API routes
     if (path.startsWith("/api/auth")) {
-      const backendUrl = new URL(req.nextUrl.pathname + req.nextUrl.search, "http://127.0.0.1:5000");
+      const backendBase = process.env.BACKEND_URL || "http://127.0.0.1:5000";
+      const backendUrl = new URL(req.nextUrl.pathname + req.nextUrl.search, backendBase);
       return NextResponse.rewrite(backendUrl);
     }
 
