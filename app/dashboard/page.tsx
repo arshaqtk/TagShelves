@@ -1,61 +1,9 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import DashboardShell from "@/components/dashboard/DashboardShell";
-import { connectDB } from "@/lib/db";
-import { verifyToken } from "@/lib/jwt";
-import Organization from "@/models/Organization";
-import Product from "@/models/Product";
-import User from "@/models/User";
-import type { CampaignProduct } from "@/components/campaigns/types";
-import { getDashboardMetrics } from "@/lib/dbUtils";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-type LeanProduct = {
-  _id: { toString: () => string };
-  name: string;
-  code: string;
-  promoPrice: number;
-  crossPrice?: number;
-  validUntil?: Date | string;
-  offer?: string;
-  status?: "active" | "inactive";
-};
-
-type LeanUser = {
-  _id: { toString: () => string };
-  name: string;
-  email: string;
-  role: string;
-};
-
-type LeanOrganization = {
-  name?: string;
-  plan?: string;
-};
-
-function serializeProduct(product: LeanProduct): CampaignProduct {
-  return {
-    id: product._id.toString(),
-    name: product.name,
-    code: product.code,
-    promoPrice: product.promoPrice,
-    crossPrice: product.crossPrice,
-    validUntil: product.validUntil ? new Date(product.validUntil).toISOString() : null,
-    offer: product.offer ?? null,
-    status: product.status === "inactive" ? "inactive" : "active",
-  };
-}
-
-function serializeUser(user: LeanUser) {
-  return {
-    id: user._id.toString(),
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  };
-}
 
 async function getDashboardData() {
   const cookieStore = await cookies();
@@ -65,34 +13,36 @@ async function getDashboardData() {
     redirect("/login");
   }
 
-  let payload;
+  const backendUrl = process.env.BACKEND_URL || "http://127.0.0.1:5000";
+
   try {
-    payload = await verifyToken(token);
-  } catch {
+    const res = await fetch(`${backendUrl}/api/dashboard/summary`, {
+      headers: {
+        Cookie: `token=${token}`,
+      },
+      next: { revalidate: 0 },
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) {
+        redirect("/login");
+      }
+      throw new Error(`Failed to fetch dashboard data: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    return {
+      organizationName: data.organizationName,
+      organizationPlan: data.organizationPlan,
+      userEmail: data.userEmail,
+      products: data.products,
+      metrics: data.metrics,
+      users: data.users,
+    };
+  } catch (error) {
+    console.error("Dashboard page data fetch error:", error);
     redirect("/login");
   }
-
-  await connectDB();
-
-  const [organization, products, metrics, users] = await Promise.all([
-    Organization.findById(payload.organizationId).select("name plan").lean(),
-    Product.find({ organizationId: payload.organizationId }).sort({ createdAt: -1 }).limit(3).lean(),
-    getDashboardMetrics(payload.organizationId),
-    User.find({ organizationId: payload.organizationId }).select("name email role").lean(),
-  ]);
-
-  const org = organization as LeanOrganization | null;
-  const productDocs = products as LeanProduct[];
-  const userDocs = (users || []) as LeanUser[];
-
-  return {
-    organizationName: org?.name ?? "Target Australia",
-    organizationPlan: org?.plan ?? "free",
-    userEmail: payload.email,
-    products: productDocs.map(serializeProduct),
-    metrics,
-    users: userDocs.map(serializeUser),
-  };
 }
 
 export default async function DashboardPage() {

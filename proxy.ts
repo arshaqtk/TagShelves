@@ -26,9 +26,8 @@ export async function proxy(req: NextRequest) {
       }
     }
 
-    // Proxy auth endpoints to Express server
-    // /api/products is handled natively by Next.js API routes
-    if (path.startsWith("/api/auth")) {
+    // Proxy all /api endpoints to Express server
+    if (path.startsWith("/api")) {
       const backendBase = process.env.BACKEND_URL || "http://127.0.0.1:5000";
       const backendUrl = new URL(req.nextUrl.pathname + req.nextUrl.search, backendBase);
       return NextResponse.rewrite(backendUrl);
@@ -91,6 +90,6 @@ export const config = {
     "/forgot-password",
     "/dashboard/:path*",
     "/campaigns/:path*",
-    "/api/auth/:path*",
+    "/api/:path*",
   ],
 };
